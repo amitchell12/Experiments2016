@@ -68,7 +68,7 @@ screendeg=2*atand(sx/2/sd);
 % generate the target array (xtarget in degrees)
 targets=((-screendeg+sizetargetdeg/2)/nrtargets)*nrtargets/2:(screendeg-sizetargetdeg/2)/nrtargets:((screendeg-sizetargetdeg/2)/nrtargets)*nrtargets/2;
 %and use only target locations to the right of the cue
-targets= targets(find(targets > xcuedeg));
+targets= targets(find(targets > xcuedeg+((screendeg-sizetargetdeg/2)/nrtargets)));
 %generate full array for all trials
 targetss=targets;
 for i=1:trialnr-1
