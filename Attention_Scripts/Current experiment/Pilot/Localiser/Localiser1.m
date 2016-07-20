@@ -28,10 +28,6 @@ clear all
 clc
 warning('off', 'all');
 
-%% input the cue position for chance perception. We want to show the cue at this location and targets at all set locations to the right of the cue
-nrtargets=20;
-trialnr=4; %nr of trials per target
-
 %% environment for the experiment
 
 dummymode=0; %for testing
@@ -43,6 +39,15 @@ sd=57; %cm, dist eye-screen
 eye=2; %number of eyes being recorded
 audio = 1;
 ParticipantID = 's1';
+
+%% input the cue position for chance perception. We want to show the cue at this location and targets at all set locations to the right of the cue
+nrtargets=20;
+
+if practice == 0; %not practice
+    trialnr=4; %nr of trials per target
+else
+    trialnr=2; %nr trials for practice
+end
 %% Time and space variables
 crosstime=1.5; %time between onset of fix cross and target, 500ms to allow patients to saccade back
 

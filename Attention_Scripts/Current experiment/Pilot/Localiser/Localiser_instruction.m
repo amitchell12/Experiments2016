@@ -30,23 +30,18 @@ warning('off', 'all');
 
 %% environment for the experiment
 
-dummymode=0; %?practice?
-smi=1; %SMI REDm camera? 0 - no, 1 - yes
+dummymode=0; %testing
+practice=0; %practice
 sx=31; %cm, xscreen
 sy=18; %cm yscreen
 sd=57; %cm, dist eye-screen
 eye=2; %number of eyes being recorded
 audio = 1;
-ParticipantID = 's1';
+ParticipantID = 'p1';
 
 %% input the cue position for chance perception. We want to show the cue at this location and targets at all set locations to the right of the cue
 nrtargets=20;
-
-if practice == 0; %not practice
-    trialnr=4; %nr of trials per target
-else
-    trialnr=2; %nr trials for practice
-end
+trialnr = 1;
 
 %% Time and space variables
 crosstime=1.5; %time between onset of fix cross and target, 500ms to allow patients to saccade back
@@ -60,7 +55,7 @@ letters(2)='H'; %target (key press - 4)
 targettime=0.100; %time of target onset
 
 %% for voice RT
-voicetrigger = 0.1;
+voicetrigger = 0.15;
 %adjust mic sensibility
 maxsecs = 0.01; %10 ms data recording
 
@@ -77,41 +72,40 @@ sizetargetdeg = 1.5; %size of target in degrees
 screendeg=2*atand(sx/2/sd);
 % generate the target array (xtarget in degrees)
 targets=((-screendeg+sizetargetdeg/2)/nrtargets)*nrtargets/2:(screendeg-sizetargetdeg/2)/nrtargets:((screendeg-sizetargetdeg/2)/nrtargets)*nrtargets/2;
-%generate full array for all trials
 targetss=targets;
 for i=1:trialnr-1
     targetss=cat(2, targetss, targets);
-end
+end;
 %permute the array for randomization
 targetss=targetss(randperm(length(targetss)));
 
-nrtrials = length(targetss);
-
+nrtrials = length(targetss); %total trial number
 %% Trial variables
 
-% read trial variables from an xls file
-[Data,Text] = xlsread('TrialCounter_loc2.xlsx');
-
+[Data,Text] = xlsread('TrialCounter_locprac.xlsx'); %excel file with target letter coding
 
 TargetLetter =  Data(:, ismember(Text, 'TargetLetter')); %defining target from xls file (A/H)TargetLetter: 1-A, 2-H
-TargetSide = Data(:, ismember(Text, 'TargetSide')); %defining the side of target, 1 - left, 2 - right
+
 
 %% correct response keys
 leftKey = KbName('-'); %this is a number that identifies the key; letter A
 rightKey = KbName('+'); %letter H
+
+%% Abort trial key
+abortKey = KbName('5'); %press the 5 key if the patient says something/moves their eyes to abort the trial
 
 %% OUTPUT
 
 %preallocation of variables, for the output
 ActualResponse=[]; 
 CorrectResponse=[];
-timefixstart=[];
-timefixend=[];
+timefixstarrt=[];
 timetargetend=[];
 timetargetstart =[];
 timekeypress=[];
 VRT = [];
 RT=[];
+Abortedtrials = [];
 
 
 %prepare correct response lists
@@ -131,101 +125,9 @@ end
 %% OUTPUT
 % Output file where variables can be saved, and output variables
 datenow = clock;
-matfilename = sprintf ('Localiser_2%d%d%d%d%d.mat', datenow (1), datenow(2), datenow(3), datenow(4), datenow(5)); %name of the output file
-
-%% Load the iViewX API library of functions
-% Setting up iViewX for running with the experiment
-if smi
-    loadlibrary('iViewXAPI.dll', 'iViewXAPI.h'); %loading SMI library
-
-
-    [pSystemInfoData, pSampleData, pEventData, pAccuracyData, CalibrationData] = InitiViewXAPI();
-
-    CalibrationData.method = int32(9); %set up calibration
-    CalibrationData.visualization = int32(1);
-
-    %B: if display device is not zero I find the validation will crash, so be
-    %careful 
-
-    CalibrationData.displayDevice = int32(0); %type of display
-    CalibrationData.speed = int32(0); %how fast dot travels
-    CalibrationData.autoAccept = int32(1); %don't need to press spacebar 
-    CalibrationData.foregroundBrightness = int32(250); %brightness of dots
-    CalibrationData.backgroundBrightness = int32(230); %brightness of background screen
-    CalibrationData.targetShape = int32(2); %shape of calibration target
-    CalibrationData.targetSize = int32(20); %size of calibration target
-    CalibrationData.targetFilename = int8(''); %filename for saving
-    pCalibrationData = libpointer('CalibrationStruct', CalibrationData); %calibration running information
-
-
-    disp('Define Logger')
-    calllib('iViewXAPI', 'iV_SetLogger', int32(1), formatString(256, int8('iViewXSDK_Matlab_AttentionLVFcue_.txt'))); %save calibration here
-end
-%% Connect iViewXAPI - alter IP addresses
-
-%B: The first IP is the IP of the SMI, the second is that of the laptop
-%running this script. You might need to make sure these are properly adjusted.  
-% SMI: 192.168.1.1
-% Laptop: 192.168.1.2
-
-if smi
-    disp('Connect to iViewX') %connecting to eyetracker system
-    ret = calllib('iViewXAPI', 'iV_Connect', formatString(16, int8('192.168.1.1')), int32(4444), formatString(16, int8('192.168.1.2')), int32(5555)); %inputing IP addresses and port information so can connect
-    switch ret
-        case 1
-            connected = 1; %if connected
-        case 104 %alternative cases if not connected, listing possibilities and what could be done
-             msgbox('Could not establish connection. Check if Eye Tracker is running', 'Connection Error', 'modal');
-        case 105
-             msgbox('Could not establish connection. Check the communication Ports', 'Connection Error', 'modal');
-        case 123
-             msgbox('Could not establish connection. Another Process is blocking the communication Ports', 'Connection Error', 'modal');
-        case 200
-             msgbox('Could not establish connection. Check if Eye Tracker is installed and running', 'Connection Error', 'modal');
-        otherwise %last resort for failed connection
-             msgbox('Could not establish connection', 'Connection Error', 'modal');
-    end
-end
-
-%if connected %when using smi, only run if connected
-        if smi
-            disp('Get System Info Data') %get system information before running
-            calllib('iViewXAPI', 'iV_GetSystemInfo', pSystemInfoData)
-            get(pSystemInfoData, 'Value')
-        end
+matfilename = sprintf ('Localiser_instruction%d%d%d%d%d.mat', datenow (1), datenow(2), datenow(3), datenow(4), datenow(5)); %name of the output file
 
 try
-    %% Setup (calibration, validation) of iViewX
-    if smi
-    %B: This is the function that starts a calibration
-        disp('Calibrate iViewX')
-        calllib('iViewXAPI', 'iV_SetupCalibration', pCalibrationData)
-        calllib('iViewXAPI', 'iV_Calibrate') %run calibration - 9-point grid
-
-    %B: This validates the calibration
-        disp('Validate Calibration') %validating calibration (uses smaller 4-point grid)
-        calllib('iViewXAPI', 'iV_Validate')
-
-    %B: This gets the calibration accuracy (if I remember right...) 
-        disp('Show Accuracy') %show accuracy of validated calibration
-        calllib('iViewXAPI', 'iV_GetAccuracy', pAccuracyData, int32(0))
-        get(pAccuracyData, 'Value')
-
-    % check calibration. if good, press key:
-    % clear recording buffer
-
-        calllib('iViewXAPI', 'iV_ClearRecordingBuffer'); %clear recording buffer before experiment starts
-
-    %% Start iViewX recording
-        calllib('iViewXAPI', 'iV_StartRecording'); %start recording eye position data before the experiment
-        while KbCheck;
-        end %wait for all keys are released
-        keyisdown = 0;
-        while ~keyisdown
-            [keyisdown] = KbCheck;
-            WaitSecs(0.001); % delay if key is pressed to prevent CPU hogging
-        end
-    end
 %% PSYCHTOOLBOX VARIABLES
     % Choose a screen
     screenNumber = max(Screen('Screens'));
@@ -302,30 +204,8 @@ try
 %% Start the trials
         for i=1:length(targetss)
             targetss(i) = targetss(i)*vadx; %converting to pixels
-            %% Marking trials
-            if i == round(length(targetss)/4) %quarter of the way through
-                Screen('TextSize', window, 30); %size of text
-                text = 'You are 1/4 of the way through'; %message
-                width=RectWidth(Screen ('TextBounds', window, text)); %width of text
-                Screen('DrawText', window, text, DisplayXSize/2 - width/2, DisplayYSize/2, foregroundColor);
-                Screen('Flip', window); %flip the text to the screen
-                WaitSecs(3)
-            elseif i == round(length(targetss)/2) %half of the way through
-                Screen('TextSize', window, 30); %size of text
-                text = 'Congratulations! You are half way! :)'; %message
-                width=RectWidth(Screen ('TextBounds', window, text)); %width of text
-                Screen('DrawText', window, text, DisplayXSize/2 - width/2, DisplayYSize/2, foregroundColor);
-                Screen('Flip', window); %flip the text to the screen
-                WaitSecs(3)
-            elseif i == length(targetss)-10 %10 trials left
-                Screen('TextSize', window, 30); %size of text
-                text = 'Nearly there, only 10 trials left :)'; %message
-                width=RectWidth(Screen ('TextBounds', window, text)); %width of text
-                Screen('DrawText', window, text, DisplayXSize/2 - width/2, DisplayYSize/2, foregroundColor);
-                Screen('Flip', window); %flip the text to the screen
-                WaitSecs(3) 
-            end              
             % Show fixation cross
+            %% Make this 1 deg, look at Daniela OPCD script
             text = '+';
             Screen('TextSize', window, textsizept); %size of text
             width=RectWidth(Screen ('TextBounds', window, text)); %fixation cross width and height
@@ -333,9 +213,6 @@ try
             Screen('DrawText', window, text, DisplayXSize/2 - width/2, DisplayYSize/2-height/2, foregroundColor); %fixation cross at center of the screen
             Screen('Flip', window); %show fixation cross
             timefixstart(i) = GetSecs;
-            if smi
-                calllib('iViewXAPI', 'iV_SendImageMessage', formatString(256, int8('FIXON'))); %sending iViewX a message 'fixon'
-            end
             WaitSecs(crosstime); %wait length of fixation cross time depending on condition
 
             t = 3;
@@ -346,13 +223,11 @@ try
             heightt=sizetarg; %height of the target
             Screen('DrawText', window, target, DisplayXSize/2+targetss(i)-sizetarg/2, DisplayYSize/2-heightt/2, foregroundColor); %draw target
             Screen('Flip', window);
-            timetargetstart(i) = GetSecs;
-            if smi
-               calllib('iViewXAPI', 'iV_SendImageMessage', formatString(256, int8('TARGETON'))); %send iVIewX 'targeton' message
-            end           
+            timetargetstart(i) = GetSecs;        
             PsychPortAudio('Start', pahandle, 0, 0, 1); %start audio reading for the trials             
             %flip to fixation cross on screen
             WaitSecs(targettime) %wait time of target
+            Screen('Flip', window); %take target off
             timetargetend(i) = GetSecs;
             WaitSecs(0.1);
             que = '?';
@@ -424,7 +299,7 @@ try
                 [keyIsDown, secs, keyCode] = KbCheck; %check keyboard
                 if keyIsDown %if any keypress
                 t=7;
-                    if any(ismember(KbName(keyCode),[KbName(leftKey), KbName(rightKey)])) %key press options - leftkey ('1'), rightkey ('4')
+                    if any(ismember(KbName(keyCode),[KbName(leftKey), KbName(rightKey), KbName(abortKey)])) %key press options - leftkey ('1'), rightkey ('4')
                         flag2 = 1;                           
                         timekeypress(i) = GetSecs;     % time for the first key press
                         RT(i) = timekeypress(i)-timetargetstart(i); %RT for the first key press
@@ -444,18 +319,28 @@ try
 
                 if any(ismember(KbName(keyCode),KbName(rightKey))) && CorrectResponse(i)==rightKey %this is a hit to the letter H
                     Accuracy(i)=1; %if hit correct key
+                    Abortedtrials(i) = 0;
                 end
 
                 if any(ismember(KbName(keyCode),KbName(leftKey))) && CorrectResponse(i)==leftKey %this is a hit for the letter 'A'
                     Accuracy(i)=1; %if hit correct key
+                    Abortedtrials(i) = 0;
                 end
 
                 if any(ismember(KbName(keyCode),KbName(rightKey))) && CorrectResponse(i)==leftKey %this is a false positive for "A"
                     Accuracy(i)=0; %if hit uncorrect key
+                    Abortedtrials(i) = 0;
+                    
                 end
 
                 if any(ismember(KbName(keyCode),KbName(leftKey))) && CorrectResponse(i)==rightKey %this is a false positive for "H"
                     Accuracy(i)=0; %if hit uncorrect key
+                    Abortedtrials(i) = 0;
+                end
+                
+                if any(ismember(KbName(keyCode), KbName(abortKey))) %this is recording an abort key
+                    Accuracy(i) = 0;
+                    Abortedtrials(i) = 1; %if hit abort key
                 end
             end
 
@@ -465,11 +350,9 @@ try
                 timekeypress(i)=NaN;
                 Accuracy(i)=0;
                 VRT(i)=NaN;
+                Abortedtrials(i) = 0;
             end 
             t = 9; %for debugging
-            if smi
-                calllib('iViewXAPI', 'iV_SendImageMessage', formatString(256, int8('FIXOFF'))); %send iViewX 'fixoff' message
-            end
             Screen('DrawText', window, text, DisplayXSize/2 - width/2, DisplayYSize/2-height/2, foregroundColor); %draw fix cross
             Screen('Flip', window); %show fixation%% Wait for key press
 % Allows patients to take their time, also means RT measure from key press
@@ -498,27 +381,11 @@ WaitSecs(0.5)
         WaitSecs (2); %wait 2 seconds
         sca; %close ptb screen
        
-        if smi 
-            % End iViewX recording
-            calllib('iViewXAPI', 'iV_StopRecording')
-        end
         PsychPortAudio('Close', pahandle); %close audio drives
         t = 10; %for debugging
 
 
-    %% Save SMI REDm data
-    if smi       
-        %save iViewX file
-        user = formatString(64, int8('Localiser2')); %Put your own file name in quotes here
-        description = formatString(64, int8('Description1')); %Add some description if you like
-        ovr = int32(1);
-        filename = formatString(256, int8(['D:\iViewXSDK_Matlab_Data' user '.idf'])); %This shows the pathway for saving - D:\ drive was the one that worked.  
-        calllib('iViewXAPI', 'iV_SaveData', filename, description, user, ovr) %Saves the file in pathway abov
-
-        % Disconnect
-        calllib('iViewXAPI', 'iV_Disconnect')
-    end
-
+  
 catch % If there is an error in our try block, return the user to the MATLAB prompt.
         sca;
         ShowCursor;
@@ -526,12 +393,6 @@ catch % If there is an error in our try block, return the user to the MATLAB pro
         ListenChar(0);
         disp('Disconnect')
         save(matfilename)
-        if smi
-            %Stop the recording... 
-            calllib('iViewXAPI', 'iV_StopRecording')
-            %disconnect
-            calllib('iViewXAPI', 'iV_Disconnect')
-        end
 end
 %% Save - incase things go wrong with analysis
 save(matfilename)
@@ -561,7 +422,7 @@ end
 epsilon = 0.0001;
 
 for i = 1:length(targetss)
-    if abs(targetss(i) - (((-screendeg+sizetargetdeg/2)/nrtargets)*nrtargets/2)) < epsilon %finding eaach individual target location to average accuracy later
+    if abs(targetss(i) - (((-screendeg+sizetargetdeg/2)/nrtargets)*nrtargets/2))  < epsilon %finding eaach individual target location to average accuracy later
         targloc(i) = 1;
     elseif abs(targetss(i) - ((((-screendeg+sizetargetdeg/2)/nrtargets)*nrtargets/2)+(screendeg-sizetargetdeg/2)/nrtargets)) < epsilon
         targloc(i) = 2;
@@ -607,12 +468,135 @@ for i = 1:length(targetss)
 end   
 
 % Creating a matrix
-Matrix2 = [];
-Matrix2(:,1)= targetss;
-Matrix2(:,2)= Accuracy;
-Matrix2(:,3)= VRT;
-Matrix2(:,4)= RT;
-Matrix2(:,5) = targloc; %marking the target location using a counter
+Matrix1 = [];
+Matrix1(:,1)= targetss;
+Matrix1(:,2)= Accuracy;
+Matrix1(:,3)= VRT;
+Matrix1(:,4)= RT;
+Matrix1(:,5) = targloc; %marking the target location using a counter
+Matrix1(:,6) = Abortedtrials;
+
+%% Filter trials
+
+if audio
+    Matrix1(find(Matrix1(:,3)>=VRTmax),3)=NaN;
+    Matrix1(find(Matrix1(:,3)<=VRTmin),3)=NaN;
+end
+Matrix1(find(Matrix1(:,4)>=RTmax),4)=NaN;
+Matrix1(find(Matrix1(:,4)<=RTmin),4)=NaN;
+
+Valid1=(length(find(Matrix1(:,3)>=0.001))/nrtrials)*100; %percentage of trials that are valid
+Accurate1=(length(find(Matrix1(:,2)>=0.001))/nrtrials)*100; %percentage of trials that are accurate
+
+%% Matrix with valid values
+
+Matrix1=Matrix1(find(Matrix1(:,3)>=0.001&Matrix1(:,6)<0.001),:);
+
+%% Isolate target locations
+% Using 'targ loc' to find accuracy and RT values for each target location
+
+Ltarg10 = Matrix1(find(Matrix1(:,5)==1),:); %left target locations from left -> right 
+Ltarg9 = Matrix1(find(Matrix1(:,5)==2),:);
+Ltarg8 = Matrix1(find(Matrix1(:,5)==3),:);
+Ltarg7 = Matrix1(find(Matrix1(:,5)==4),:);
+Ltarg6 = Matrix1(find(Matrix1(:,5)==5),:);
+Ltarg5 = Matrix1(find(Matrix1(:,5)==6),:);
+Ltarg4 = Matrix1(find(Matrix1(:,5)==7),:);
+Ltarg3 = Matrix1(find(Matrix1(:,5)==8),:);
+Ltarg2 = Matrix1(find(Matrix1(:,5)==9),:);
+Ltarg1 = Matrix1(find(Matrix1(:,5)==10),:);
+targ0 = Matrix1(find(Matrix1(:,5)==11),:); %target at location 0
+Rtarg1 = Matrix1(find(Matrix1(:,5)==12),:); %right target locations from left -> right
+Rtarg2 = Matrix1(find(Matrix1(:,5)==13),:);
+Rtarg3 = Matrix1(find(Matrix1(:,5)==14),:);
+Rtarg4 = Matrix1(find(Matrix1(:,5)==15),:);
+Rtarg5 = Matrix1(find(Matrix1(:,5)==16),:);
+Rtarg6 = Matrix1(find(Matrix1(:,5)==17),:);
+Rtarg7 = Matrix1(find(Matrix1(:,5)==18),:);
+Rtarg8 = Matrix1(find(Matrix1(:,5)==19),:);
+Rtarg9 = Matrix1(find(Matrix1(:,5)==20),:);
+Rtarg10 = Matrix1(find(Matrix1(:,5)==21),:);
+
+ordered_targets = [Ltarg10; Ltarg9; Ltarg8; Ltarg7; Ltarg6; Ltarg5; Ltarg4; Ltarg3; Ltarg2; Ltarg1; targ0; Rtarg1; Rtarg2; Rtarg3; Rtarg4; Rtarg5; Rtarg6; Rtarg7; Rtarg8; Rtarg9; Rtarg10];
+
+%% For now
+Macc_Ltarg10 = nanmean(Ltarg10(:,2))*100; %mean accuracy for each target location
+Macc_Ltarg9 = nanmean(Ltarg9(:,2))*100;
+Macc_Ltarg8 = nanmean(Ltarg8(:,2))*100;
+Macc_Ltarg7 = nanmean(Ltarg7(:,2))*100;
+Macc_Ltarg6 = nanmean(Ltarg6(:,2))*100;
+Macc_Ltarg5 = nanmean(Ltarg5(:,2))*100;
+Macc_Ltarg4 = nanmean(Ltarg4(:,2))*100;
+Macc_Ltarg3 = nanmean(Ltarg3(:,2))*100;
+Macc_Ltarg2 = nanmean(Ltarg2(:,2))*100;
+Macc_Ltarg1 = nanmean(Ltarg1(:,2))*100;
+Macc_targ0 = nanmean(targ0(:,2))*100;
+Macc_Rtarg1 = nanmean(Rtarg1(:,2))*100;
+Macc_Rtarg2 = nanmean(Rtarg2(:,2))*100;
+Macc_Rtarg3 = nanmean(Rtarg3(:,2))*100;
+Macc_Rtarg4 = nanmean(Rtarg4(:,2))*100;
+Macc_Rtarg5 = nanmean(Rtarg5(:,2))*100;
+Macc_Rtarg6 = nanmean(Rtarg6(:,2))*100;
+Macc_Rtarg7 = nanmean(Rtarg7(:,2))*100;
+Macc_Rtarg8 = nanmean(Rtarg8(:,2))*100;
+Macc_Rtarg9 = nanmean(Rtarg9(:,2))*100;
+Macc_Rtarg10 = nanmean(Rtarg10(:,2))*100;
+
+Av_acc1= [Macc_Ltarg10 Macc_Ltarg9 Macc_Ltarg8 Macc_Ltarg7 Macc_Ltarg6 Macc_Ltarg5 Macc_Ltarg4 Macc_Ltarg3 Macc_Ltarg2 Macc_Ltarg1 Macc_targ0 Macc_Rtarg1 Macc_Rtarg2 Macc_Rtarg3 Macc_Rtarg4 Macc_Rtarg5 Macc_Rtarg6 Macc_Rtarg7 Macc_Rtarg8 Macc_Rtarg9 Macc_Rtarg10];
+
+%% Creating new matrix excluding inaccurate trials
+Matrix1 = Matrix1(find(Matrix1(:,2)>=0.001),:);
+
+%% Isolate target locations (again, including accuracy filter)
+% Using 'targ loc' to find accuracy and RT values for each target location
+% May need to 'comment' some of these depending on location of the xcue
+
+Ltarg10 = Matrix1(find(Matrix1(:,5)==1),:); %left target locations from left -> right 
+Ltarg9 = Matrix1(find(Matrix1(:,5)==2),:);
+Ltarg8 = Matrix1(find(Matrix1(:,5)==3),:);
+Ltarg7 = Matrix1(find(Matrix1(:,5)==4),:);
+Ltarg6 = Matrix1(find(Matrix1(:,5)==5),:);
+Ltarg5 = Matrix1(find(Matrix1(:,5)==6),:);
+Ltarg4 = Matrix1(find(Matrix1(:,5)==7),:);
+Ltarg3 = Matrix1(find(Matrix1(:,5)==8),:);
+Ltarg2 = Matrix1(find(Matrix1(:,5)==9),:);
+Ltarg1 = Matrix1(find(Matrix1(:,5)==10),:);
+targ0 = Matrix1(find(Matrix1(:,5)==11),:); %target at location 0
+Rtarg1 = Matrix1(find(Matrix1(:,5)==12),:); %right target locations from left -> right
+Rtarg2 = Matrix1(find(Matrix1(:,5)==13),:);
+Rtarg3 = Matrix1(find(Matrix1(:,5)==14),:);
+Rtarg4 = Matrix1(find(Matrix1(:,5)==15),:);
+Rtarg5 = Matrix1(find(Matrix1(:,5)==16),:);
+Rtarg6 = Matrix1(find(Matrix1(:,5)==17),:);
+Rtarg7 = Matrix1(find(Matrix1(:,5)==18),:);
+Rtarg8 = Matrix1(find(Matrix1(:,5)==19),:);
+Rtarg9 = Matrix1(find(Matrix1(:,5)==20),:);
+Rtarg10 = Matrix1(find(Matrix1(:,5)==21),:);
+
+%% Averaging VRT
+MVRT_Ltarg10 = nanmean(Ltarg10(:,3)); %mean VRT for each target location
+MVRT_Ltarg9 = nanmean(Ltarg9(:,3));
+MVRT_Ltarg8 = nanmean(Ltarg8(:,3));
+MVRT_Ltarg7 = nanmean(Ltarg7(:,3));
+MVRT_Ltarg6 = nanmean(Ltarg6(:,3));
+MVRT_Ltarg5 = nanmean(Ltarg5(:,3));
+MVRT_Ltarg4 = nanmean(Ltarg4(:,3));
+MVRT_Ltarg3 = nanmean(Ltarg3(:,3));
+MVRT_Ltarg2 = nanmean(Ltarg2(:,3));
+MVRT_Ltarg1 = nanmean(Ltarg1(:,3));
+MVRT_targ0 = nanmean(targ0(:,3));
+MVRT_Rtarg1 = nanmean(Rtarg1(:,3));
+MVRT_Rtarg2 = nanmean(Rtarg2(:,3));
+MVRT_Rtarg3 = nanmean(Rtarg3(:,3));
+MVRT_Rtarg4 = nanmean(Rtarg4(:,3));
+MVRT_Rtarg5 = nanmean(Rtarg5(:,3));
+MVRT_Rtarg6 = nanmean(Rtarg6(:,3));
+MVRT_Rtarg7 = nanmean(Rtarg7(:,3));
+MVRT_Rtarg8 = nanmean(Rtarg8(:,3));
+MVRT_Rtarg9 = nanmean(Rtarg9(:,3));
+MVRT_Rtarg10 = nanmean(Rtarg10(:,3));
+
+Av_VRT1 = [MVRT_Ltarg10 MVRT_Ltarg9 MVRT_Ltarg8 MVRT_Ltarg7 MVRT_Ltarg6 MVRT_Ltarg5 MVRT_Ltarg4 MVRT_Ltarg3 MVRT_Ltarg2 MVRT_Ltarg1 MVRT_targ0 MVRT_Rtarg1 MVRT_Rtarg2 MVRT_Rtarg3 MVRT_Rtarg4 MVRT_Rtarg5 MVRT_Rtarg6 MVRT_Rtarg7 MVRT_Rtarg8 MVRT_Rtarg9 MVRT_Rtarg10];
 
 %% SAVE
 save(matfilename)

@@ -30,7 +30,8 @@ warning('off', 'all');
 
 %% environment for the experiment
 
-dummymode=0; %?practice?
+dummymode=0; %for testing
+practice=0; %for practice
 smi=1; %SMI REDm camera? 0 - no, 1 - yes
 sx=31; %cm, xscreen
 sy=18; %cm yscreen
@@ -42,12 +43,11 @@ ParticipantID = 's1';
 %% input the cue position for chance perception. We want to show the cue at this location and targets at all set locations to the right of the cue
 nrtargets=20;
 
-if practice == 0; %not practice
+if practice mode == 0; %not practice
     trialnr=4; %nr of trials per target
 else
-    trialnr=2; %nr trials for practice
+    trialnr=2;
 end
-
 %% Time and space variables
 crosstime=1.5; %time between onset of fix cross and target, 500ms to allow patients to saccade back
 
@@ -77,21 +77,22 @@ sizetargetdeg = 1.5; %size of target in degrees
 screendeg=2*atand(sx/2/sd);
 % generate the target array (xtarget in degrees)
 targets=((-screendeg+sizetargetdeg/2)/nrtargets)*nrtargets/2:(screendeg-sizetargetdeg/2)/nrtargets:((screendeg-sizetargetdeg/2)/nrtargets)*nrtargets/2;
-%generate full array for all trials
 targetss=targets;
 for i=1:trialnr-1
     targetss=cat(2, targetss, targets);
-end
+end;
 %permute the array for randomization
 targetss=targetss(randperm(length(targetss)));
 
-nrtrials = length(targetss);
-
+nrtrials = length(targetss); %total trial number
 %% Trial variables
 
-% read trial variables from an xls file
-[Data,Text] = xlsread('TrialCounter_loc2.xlsx');
-
+if practice == 0;
+    % read trial variables from an xls file
+    [Data,Text] = xlsread('TrialCounter_loc1.xlsx');
+else
+    [Data,Text] = xlsread('TrialCounter_locprac.xlsx'); %practice trials
+end
 
 TargetLetter =  Data(:, ismember(Text, 'TargetLetter')); %defining target from xls file (A/H)TargetLetter: 1-A, 2-H
 TargetSide = Data(:, ismember(Text, 'TargetSide')); %defining the side of target, 1 - left, 2 - right
@@ -105,14 +106,12 @@ rightKey = KbName('+'); %letter H
 %preallocation of variables, for the output
 ActualResponse=[]; 
 CorrectResponse=[];
-timefixstart=[];
-timefixend=[];
+timefixstarrt=[];
 timetargetend=[];
 timetargetstart =[];
 timekeypress=[];
 VRT = [];
 RT=[];
-
 
 %prepare correct response lists
 for i=1:nrtrials %for all trials run in the sequence
@@ -131,14 +130,17 @@ end
 %% OUTPUT
 % Output file where variables can be saved, and output variables
 datenow = clock;
-matfilename = sprintf ('Localiser_2%d%d%d%d%d.mat', datenow (1), datenow(2), datenow(3), datenow(4), datenow(5)); %name of the output file
+if practice == 0;
+    matfilename = sprintf ('Localiser_1%d%d%d%d%d.mat', datenow (1), datenow(2), datenow(3), datenow(4), datenow(5)); %name of the output file
+else
+    matfilename = sprintf ('Localiser_prac%d%d%d%d%d.mat', datenow (1), datenow(2), datenow(3), datenow(4), datenow(5));
+end
 
 %% Load the iViewX API library of functions
 % Setting up iViewX for running with the experiment
 if smi
     loadlibrary('iViewXAPI.dll', 'iViewXAPI.h'); %loading SMI library
-
-
+    
     [pSystemInfoData, pSampleData, pEventData, pAccuracyData, CalibrationData] = InitiViewXAPI();
 
     CalibrationData.method = int32(9); %set up calibration
@@ -146,7 +148,6 @@ if smi
 
     %B: if display device is not zero I find the validation will crash, so be
     %careful 
-
     CalibrationData.displayDevice = int32(0); %type of display
     CalibrationData.speed = int32(0); %how fast dot travels
     CalibrationData.autoAccept = int32(1); %don't need to press spacebar 
@@ -156,7 +157,6 @@ if smi
     CalibrationData.targetSize = int32(20); %size of calibration target
     CalibrationData.targetFilename = int8(''); %filename for saving
     pCalibrationData = libpointer('CalibrationStruct', CalibrationData); %calibration running information
-
 
     disp('Define Logger')
     calllib('iViewXAPI', 'iV_SetLogger', int32(1), formatString(256, int8('iViewXSDK_Matlab_AttentionLVFcue_.txt'))); %save calibration here
@@ -186,7 +186,6 @@ if smi
              msgbox('Could not establish connection', 'Connection Error', 'modal');
     end
 end
-
 %if connected %when using smi, only run if connected
         if smi
             disp('Get System Info Data') %get system information before running
@@ -324,7 +323,7 @@ try
                 Screen('DrawText', window, text, DisplayXSize/2 - width/2, DisplayYSize/2, foregroundColor);
                 Screen('Flip', window); %flip the text to the screen
                 WaitSecs(3) 
-            end              
+            end            
             % Show fixation cross
             text = '+';
             Screen('TextSize', window, textsizept); %size of text
@@ -509,7 +508,7 @@ WaitSecs(0.5)
     %% Save SMI REDm data
     if smi       
         %save iViewX file
-        user = formatString(64, int8('Localiser2')); %Put your own file name in quotes here
+        user = formatString(64, int8('Localiser1')); %Put your own file name in quotes here
         description = formatString(64, int8('Description1')); %Add some description if you like
         ovr = int32(1);
         filename = formatString(256, int8(['D:\iViewXSDK_Matlab_Data' user '.idf'])); %This shows the pathway for saving - D:\ drive was the one that worked.  
@@ -517,6 +516,7 @@ WaitSecs(0.5)
 
         % Disconnect
         calllib('iViewXAPI', 'iV_Disconnect')
+
     end
 
 catch % If there is an error in our try block, return the user to the MATLAB prompt.
@@ -561,7 +561,7 @@ end
 epsilon = 0.0001;
 
 for i = 1:length(targetss)
-    if abs(targetss(i) - (((-screendeg+sizetargetdeg/2)/nrtargets)*nrtargets/2)) < epsilon %finding eaach individual target location to average accuracy later
+    if abs(targetss(i) - (((-screendeg+sizetargetdeg/2)/nrtargets)*nrtargets/2))  < epsilon %finding eaach individual target location to average accuracy later
         targloc(i) = 1;
     elseif abs(targetss(i) - ((((-screendeg+sizetargetdeg/2)/nrtargets)*nrtargets/2)+(screendeg-sizetargetdeg/2)/nrtargets)) < epsilon
         targloc(i) = 2;
@@ -607,12 +607,12 @@ for i = 1:length(targetss)
 end   
 
 % Creating a matrix
-Matrix2 = [];
-Matrix2(:,1)= targetss;
-Matrix2(:,2)= Accuracy;
-Matrix2(:,3)= VRT;
-Matrix2(:,4)= RT;
-Matrix2(:,5) = targloc; %marking the target location using a counter
+Matrix1 = [];
+Matrix1(:,1)= targetss;
+Matrix1(:,2)= Accuracy;
+Matrix1(:,3)= VRT;
+Matrix1(:,4)= RT;
+Matrix1(:,5) = targloc; %marking the target location using a counter
 
 %% SAVE
 save(matfilename)
