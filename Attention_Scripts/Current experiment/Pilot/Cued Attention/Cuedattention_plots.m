@@ -1,0 +1,75 @@
+%% Plotting accuracy and RT for localiser task
+
+%% Files and varaibles
+% Data file has to be in same folder as script
+% Load participant matfile
+
+% Or, for data filed with SMI analysis
+session1=uigetfile('*_CuedAttention1.mat');
+load (session1);
+session2=uigetfile('*_CuedAttention2.mat');
+load (session2);
+session3=uigetfile('*_CuedAttention3.mat');
+load (session3);
+
+% redefining targets so vectors are the same length
+targets=((-screendeg+sizetargetdeg/2)/nrtargets)*nrtargets/2:(screendeg-sizetargetdeg/2)/nrtargets:((screendeg-sizetargetdeg/2)/nrtargets)*nrtargets/2;
+
+% Acurracy - this should all be the same length
+Av_acc = [Av_acc1; Av_acc2; Av_acc3];
+
+for i = 1:length(Av_acc)
+    Av_allacc(i) = mean(Av_acc(:,i));
+end
+
+% Average VRT - should be higher than localiser
+Av_VRT = [Av_VRT1; Av_VRT2; Av_VRT3];
+
+for i = 1:length(Av_VRT)
+    Av_allVRTcue(i) = mean(Av_VRT(:,i));
+end
+
+% Valid trials
+Av_valid = [Valid1; Valid2; Valid3];
+
+for i = 1:length(Av_valid)
+    Av_allValid(i) = mean(Av_valid(i));
+end
+
+% only for when eye tracking
+Av_valideye = [Valid_eye1; Valid_eye2; Valid_eye3];
+
+for i = 1:length(Av_valideye)
+    Av_allValideye(i) = mean(Av_valideye(i));
+end
+
+%% Plots
+
+% Average accuracy
+figure(1)
+plot(targets, Av_allacc, 'b');
+axis([-16 16 0 100]);
+xlabel('Target location (deg)'); ylabel('Percentage accuracy');
+title('Effect of target location on accuracy');
+
+% Average VRT
+figure(2)
+plot(targets, Av_allVRTcue, 'r');
+axis([-16 16 300 700]);
+xlabel('Target location (deg)'); ylabel('Mean VRT(ms)');
+title('Effect of target location on response time');
+
+%% Combine localiser VRT and cued attention VRT
+
+% VRT for cued attention task should be higher than localiser task
+figure(3)
+plot(targets, Av_allVRTloc, 'r');
+hold on
+plot(targets, Av_allVRTcue, 'b');
+axis([-16 16 400 700]);
+xlabel('Target location (deg)'); ylabel('Mean VRT(ms)');
+legend('No cue', 'Cue');
+title('Effect of target location on response time');
+
+matfilename = sprintf('%s_CuedAttentionplots', ParticipantID);
+save(matfilename)
