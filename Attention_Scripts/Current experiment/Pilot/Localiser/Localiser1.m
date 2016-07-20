@@ -30,9 +30,9 @@ warning('off', 'all');
 
 %% environment for the experiment
 
-dummymode=0; %for testing
-practice=0; %for practice
-smi=1; %SMI REDm camera? 0 - no, 1 - yes
+dummymode=1; %for testing
+practice=1; %for practice
+smi=0; %SMI REDm camera? 0 - no, 1 - yes
 sx=31; %cm, xscreen
 sy=18; %cm yscreen
 sd=57; %cm, dist eye-screen
@@ -239,9 +239,13 @@ try
     %[window, rect] = Screen('OpenWindow',screenNumber, backgroundColor, small_screen); %small screen for testing, use this until your happy experiment is up and running
     HideCursor;
     %ListenChar(2); %disabling keyboard input to Matlab: If your script should abort and your keyboard is dead, press CTRL+C to reenable keyboard input
-
-    [window, rect]= Screen('OpenWindow', screenNumber, backgroundColor); %this is fullscreen for experiment
-
+    
+    if dummymode == 0; %for testing
+        [window, rect]= Screen('OpenWindow', screenNumber, backgroundColor); %this is fullscreen for experiment
+    else 
+        [window, rect] = Screen('OpenWindow',screenNumber, backgroundColor, small_screen); %small screen for testing, use this until your happy experiment is up and running
+    end
+    
     % find the size of the display
     DisplayXSize = rect(3);
     DisplayYSize = rect(4);
