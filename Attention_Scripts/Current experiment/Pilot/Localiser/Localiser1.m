@@ -30,7 +30,7 @@ warning('off', 'all');
 
 %% environment for the experiment
 
-dummymode=1; %for testing
+dummymode=0; %for testing
 practice=1; %for practice
 smi=0; %SMI REDm camera? 0 - no, 1 - yes
 sx=31; %cm, xscreen

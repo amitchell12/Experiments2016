@@ -233,13 +233,16 @@ try
     % Get colours
     backgroundColor = BlackIndex(screenNumber); %black
     foregroundColor = WhiteIndex(screenNumber); %white
-
-    %[window, rect] = Screen('OpenWindow',screenNumber, backgroundColor, small_screen); %small screen for testing, use this until your happy experiment is up and running
+    
     HideCursor;
     ListenChar(2); %disabling keyboard input to Matlab: If your script should abort and your keyboard is dead, press CTRL+C to reenable keyboard input
-
-    [window, rect]= Screen('OpenWindow', screenNumber, backgroundColor); %this is fullscreen for experiment
-
+    
+    if dummymode == 0;
+        [window, rect]= Screen('OpenWindow', screenNumber, backgroundColor); %this is fullscreen for experiment
+    else %for practice
+        [window, rect] = Screen('OpenWindow',screenNumber, backgroundColor, small_screen); %small screen for testing, use this until your happy experiment is up and running
+    end
+    
     % find the size of the display
     DisplayXSize = rect(3);
     DisplayYSize = rect(4);
