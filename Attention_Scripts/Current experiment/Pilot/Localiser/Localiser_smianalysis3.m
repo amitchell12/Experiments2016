@@ -150,9 +150,9 @@ Matrix3(find(Matrix3(:,4)<=RTmin),4)=NaN;
 Matrix3(find(Matrix3(:,6)>=eyemax),6)=NaN;
 Matrix3(find(Matrix3(:,7)>=eyemax),7)=NaN;% What is a suitable degree to filter out of this trial?
 
-Valid2 =(length(find(Matrix3(:,3)>=0.001&Matrix3(:,6)>=0.001&Matrix3(:,7)>=0.001))/nrtrials)*100; %percentage valid trials
-AccurateAll2 =(length(find(Matrix3(:,2)>=0.001))/nrtrials)*100; %percentage invalid trials
-Valid_eye2 = (length(find(Matrix3(:,6)>=0.001&Matrix3(:,7)>=0.001))/nrtrials)*100; %valid trials for eye movements only
+Valid3 =(length(find(Matrix3(:,3)>=0.001&Matrix3(:,6)>=0.001&Matrix3(:,7)>=0.001))/nrtrials)*100; %percentage valid trials
+AccurateAll3 =(length(find(Matrix3(:,2)>=0.001))/nrtrials)*100; %percentage invalid trials
+Valid_eye3 = (length(find(Matrix3(:,6)>=0.001&Matrix3(:,7)>=0.001))/nrtrials)*100; %valid trials for eye movements only
 
 %% Matrix with valid values
 
