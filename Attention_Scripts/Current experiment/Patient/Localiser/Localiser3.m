@@ -247,7 +247,7 @@ try
                     [keyisdown] = KbCheck;
                     WaitSecs(0.001); % delay to prevent CPU hogging
                 end
-            elseif i == length(targetss)-10 %10 trials left
+            elseif i == length(targetss)-9 %10 trials left
                 Screen('TextSize', window, 30); %size of text
                 text = 'Nearly there, only 10 trials left :)'; %message
                 width=RectWidth(Screen ('TextBounds', window, text)); %width of text

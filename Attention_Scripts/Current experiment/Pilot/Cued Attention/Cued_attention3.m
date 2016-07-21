@@ -315,7 +315,7 @@ try
                 Screen('DrawText', window, text, DisplayXSize/2 - width/2, DisplayYSize/2, foregroundColor);
                 Screen('Flip', window); %flip the text to the screen
                 WaitSecs(3)
-            elseif i == length(targetss)-10 %10 trials left
+            elseif i == length(targetss)-9 %10 trials left
                 Screen('TextSize', window, 30); %size of text
                 text = 'Nearly there, only 10 trials left :)'; %message
                 width=RectWidth(Screen ('TextBounds', window, text)); %width of text

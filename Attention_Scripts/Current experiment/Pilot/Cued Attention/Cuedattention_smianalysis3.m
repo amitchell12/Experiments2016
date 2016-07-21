@@ -24,7 +24,7 @@ targloc = Matrix3(:,5);
 
 VRTmax = 1500;
 VRTmin = 350;
-RTmax = 1500;
+RTmax = 2500;
 RTmin = 150;
 eyemax = 1;
 
@@ -197,29 +197,29 @@ ordered_targets = [Ltarg10; Ltarg9; Ltarg8; Ltarg7; Ltarg6; Ltarg5; Ltarg4; Ltar
 % end
 
 %% For now
-Macc_Ltarg10 = mean(Ltarg10(:,2))*100; %mean accuracy for each target location
-Macc_Ltarg9 = mean(Ltarg9(:,2))*100;
-Macc_Ltarg8 = mean(Ltarg8(:,2))*100;
-Macc_Ltarg7 = mean(Ltarg7(:,2))*100;
-Macc_Ltarg6 = mean(Ltarg6(:,2))*100;
-Macc_Ltarg5 = mean(Ltarg5(:,2))*100;
-Macc_Ltarg4 = mean(Ltarg4(:,2))*100;
-Macc_Ltarg3 = mean(Ltarg3(:,2))*100;
-Macc_Ltarg2 = mean(Ltarg2(:,2))*100;
-Macc_Ltarg1 = mean(Ltarg1(:,2))*100;
-Macc_targ0 = mean(targ0(:,2))*100;
-Macc_Rtarg1 = mean(Rtarg1(:,2))*100;
-Macc_Rtarg2 = mean(Rtarg2(:,2))*100;
-Macc_Rtarg3 = mean(Rtarg3(:,2))*100;
-Macc_Rtarg4 = mean(Rtarg4(:,2))*100;
-Macc_Rtarg5 = mean(Rtarg5(:,2))*100;
-Macc_Rtarg6 = mean(Rtarg6(:,2))*100;
-Macc_Rtarg7 = mean(Rtarg7(:,2))*100;
-Macc_Rtarg8 = mean(Rtarg8(:,2))*100;
-Macc_Rtarg9 = mean(Rtarg9(:,2))*100;
-Macc_Rtarg10 = mean(Rtarg10(:,2))*100;
+Macc_Ltarg10 = nanmean(Ltarg10(:,2))*100; %mean accuracy for each target location
+Macc_Ltarg9 = nanmean(Ltarg9(:,2))*100;
+Macc_Ltarg8 = nanmean(Ltarg8(:,2))*100;
+Macc_Ltarg7 = nanmean(Ltarg7(:,2))*100;
+Macc_Ltarg6 = nanmean(Ltarg6(:,2))*100;
+Macc_Ltarg5 = nanmean(Ltarg5(:,2))*100;
+Macc_Ltarg4 = nanmean(Ltarg4(:,2))*100;
+Macc_Ltarg3 = nanmean(Ltarg3(:,2))*100;
+Macc_Ltarg2 = nanmean(Ltarg2(:,2))*100;
+Macc_Ltarg1 = nanmean(Ltarg1(:,2))*100;
+Macc_targ0 = nanmean(targ0(:,2))*100;
+Macc_Rtarg1 = nanmean(Rtarg1(:,2))*100;
+Macc_Rtarg2 = nanmean(Rtarg2(:,2))*100;
+Macc_Rtarg3 = nanmean(Rtarg3(:,2))*100;
+Macc_Rtarg4 = nanmean(Rtarg4(:,2))*100;
+Macc_Rtarg5 = nanmean(Rtarg5(:,2))*100;
+Macc_Rtarg6 = nanmean(Rtarg6(:,2))*100;
+Macc_Rtarg7 = nanmean(Rtarg7(:,2))*100;
+Macc_Rtarg8 = nanmean(Rtarg8(:,2))*100;
+Macc_Rtarg9 = nanmean(Rtarg9(:,2))*100;
+Macc_Rtarg10 = nanmean(Rtarg10(:,2))*100;
 
-Av_acc3 = [Macc_Ltarg10 Macc_Ltarg9 Macc_Ltarg8 Macc_Ltarg7 Macc_Ltarg6 Macc_Ltarg5 Macc_Ltarg4 Macc_Ltarg3 Macc_Ltarg2 Macc_Ltarg1 Macc_targ0 Macc_Rtarg1 Macc_Rtarg2 Macc_Rtarg3 Macc_Rtarg4 Macc_Rtarg5 Macc_Rtarg6 Macc_Rtarg7 Macc_Rtarg8 Macc_Rtarg9 Macc_Rtarg10];
+Av_acc3= [Macc_Ltarg10 Macc_Ltarg9 Macc_Ltarg8 Macc_Ltarg7 Macc_Ltarg6 Macc_Ltarg5 Macc_Ltarg4 Macc_Ltarg3 Macc_Ltarg2 Macc_Ltarg1 Macc_targ0 Macc_Rtarg1 Macc_Rtarg2 Macc_Rtarg3 Macc_Rtarg4 Macc_Rtarg5 Macc_Rtarg6 Macc_Rtarg7 Macc_Rtarg8 Macc_Rtarg9 Macc_Rtarg10];
 
 %% Creating new matrix excluding inaccurate trials
 Matrix3 = Matrix3(find(Matrix3(:,2)>=0.001),:);
@@ -227,6 +227,7 @@ Matrix3 = Matrix3(find(Matrix3(:,2)>=0.001),:);
 %% Isolate target locations (again, including accuracy filter)
 % Using 'targ loc' to find accuracy and RT values for each target location
 % May need to 'comment' some of these depending on location of the xcue
+
 Ltarg10 = Matrix3(find(Matrix3(:,5)==1),:); %left target locations from left -> right 
 Ltarg9 = Matrix3(find(Matrix3(:,5)==2),:);
 Ltarg8 = Matrix3(find(Matrix3(:,5)==3),:);
@@ -250,29 +251,29 @@ Rtarg9 = Matrix3(find(Matrix3(:,5)==20),:);
 Rtarg10 = Matrix3(find(Matrix3(:,5)==21),:);
 
 %% Averaging VRT
-MVRT_Ltarg10 = mean(Ltarg10(:,3)); %mean VRT for each target location
-MVRT_Ltarg9 = mean(Ltarg9(:,3));
-MVRT_Ltarg8 = mean(Ltarg8(:,3));
-MVRT_Ltarg7 = mean(Ltarg7(:,3));
-MVRT_Ltarg6 = mean(Ltarg6(:,3));
-MVRT_Ltarg5 = mean(Ltarg5(:,3));
-MVRT_Ltarg4 = mean(Ltarg4(:,3));
-MVRT_Ltarg3 = mean(Ltarg3(:,3));
-MVRT_Ltarg2 = mean(Ltarg2(:,3));
-MVRT_Ltarg1 = mean(Ltarg1(:,3));
-MVRT_targ0 = mean(targ0(:,3));
-MVRT_Rtarg1 = mean(Rtarg1(:,3));
-MVRT_Rtarg2 = mean(Rtarg2(:,3));
-MVRT_Rtarg3 = mean(Rtarg3(:,3));
-MVRT_Rtarg4 = mean(Rtarg4(:,3));
-MVRT_Rtarg5 = mean(Rtarg5(:,3));
-MVRT_Rtarg6 = mean(Rtarg6(:,3));
-MVRT_Rtarg7 = mean(Rtarg7(:,3));
-MVRT_Rtarg8 = mean(Rtarg8(:,3));
-MVRT_Rtarg9 = mean(Rtarg9(:,3));
-MVRT_Rtarg10 = mean(Rtarg10(:,3));
+MVRT_Ltarg10 = nanmean(Ltarg10(:,3)); %mean VRT for each target location
+MVRT_Ltarg9 = nanmean(Ltarg9(:,3));
+MVRT_Ltarg8 = nanmean(Ltarg8(:,3));
+MVRT_Ltarg7 = nanmean(Ltarg7(:,3));
+MVRT_Ltarg6 = nanmean(Ltarg6(:,3));
+MVRT_Ltarg5 = nanmean(Ltarg5(:,3));
+MVRT_Ltarg4 = nanmean(Ltarg4(:,3));
+MVRT_Ltarg3 = nanmean(Ltarg3(:,3));
+MVRT_Ltarg2 = nanmean(Ltarg2(:,3));
+MVRT_Ltarg1 = nanmean(Ltarg1(:,3));
+MVRT_targ0 = nanmean(targ0(:,3));
+MVRT_Rtarg1 = nanmean(Rtarg1(:,3));
+MVRT_Rtarg2 = nanmean(Rtarg2(:,3));
+MVRT_Rtarg3 = nanmean(Rtarg3(:,3));
+MVRT_Rtarg4 = nanmean(Rtarg4(:,3));
+MVRT_Rtarg5 = nanmean(Rtarg5(:,3));
+MVRT_Rtarg6 = nanmean(Rtarg6(:,3));
+MVRT_Rtarg7 = nanmean(Rtarg7(:,3));
+MVRT_Rtarg8 = nanmean(Rtarg8(:,3));
+MVRT_Rtarg9 = nanmean(Rtarg9(:,3));
+MVRT_Rtarg10 = nanmean(Rtarg10(:,3));
 
 Av_VRT3 = [MVRT_Ltarg10 MVRT_Ltarg9 MVRT_Ltarg8 MVRT_Ltarg7 MVRT_Ltarg6 MVRT_Ltarg5 MVRT_Ltarg4 MVRT_Ltarg3 MVRT_Ltarg2 MVRT_Ltarg1 MVRT_targ0 MVRT_Rtarg1 MVRT_Rtarg2 MVRT_Rtarg3 MVRT_Rtarg4 MVRT_Rtarg5 MVRT_Rtarg6 MVRT_Rtarg7 MVRT_Rtarg8 MVRT_Rtarg9 MVRT_Rtarg10];
 
-%% Save all data
+%% SAVE
 save(matfilename)

@@ -19,28 +19,28 @@ targets=((-screendeg+sizetargetdeg/2)/nrtargets)*nrtargets/2:(screendeg-sizetarg
 Av_acc = [Av_acc1; Av_acc2; Av_acc3];
 
 for i = 1:length(Av_acc)
-    Av_allacc(i) = mean(Av_acc(:,i));
+    Av_allacc(i) = nanmean(Av_acc(:,i));
 end
 
 % Average VRT - should be higher than localiser
 Av_VRT = [Av_VRT1; Av_VRT2; Av_VRT3];
 
 for i = 1:length(Av_VRT)
-    Av_allVRTcue(i) = mean(Av_VRT(:,i));
+    Av_allVRTcue(i) = nanmean(Av_VRT(:,i));
 end
 
 % Valid trials
 Av_valid = [Valid1; Valid2; Valid3];
 
 for i = 1:length(Av_valid)
-    Av_allValid(i) = mean(Av_valid(i));
+    Av_allValid(i) = nanmean(Av_valid(i));
 end
 
 % only for when eye tracking
 Av_valideye = [Valid_eye1; Valid_eye2; Valid_eye3];
 
 for i = 1:length(Av_valideye)
-    Av_allValideye(i) = mean(Av_valideye(i));
+    Av_allValideye(i) = nanmean(Av_valideye(i));
 end
 
 %% Plots
@@ -55,7 +55,7 @@ title('Effect of target location on accuracy');
 % Average VRT
 figure(2)
 plot(targets, Av_allVRTcue, 'r');
-axis([-16 16 300 700]);
+axis([-16 16 500 900]);
 xlabel('Target location (deg)'); ylabel('Mean VRT(ms)');
 title('Effect of target location on response time');
 
@@ -66,7 +66,7 @@ figure(3)
 plot(targets, Av_allVRTloc, 'r');
 hold on
 plot(targets, Av_allVRTcue, 'b');
-axis([-16 16 400 700]);
+axis([-16 16 500 900]);
 xlabel('Target location (deg)'); ylabel('Mean VRT(ms)');
 legend('No cue', 'Cue');
 title('Effect of target location on response time');

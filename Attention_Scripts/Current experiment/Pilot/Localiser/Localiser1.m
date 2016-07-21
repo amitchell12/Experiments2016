@@ -31,8 +31,8 @@ warning('off', 'all');
 %% environment for the experiment
 
 dummymode=0; %for testing
-practice=1; %for practice
-smi=0; %SMI REDm camera? 0 - no, 1 - yes
+practice=0; %for practice
+smi=1; %SMI REDm camera? 0 - no, 1 - yes
 sx=31; %cm, xscreen
 sy=18; %cm yscreen
 sd=57; %cm, dist eye-screen
@@ -320,7 +320,7 @@ try
                 Screen('DrawText', window, text, DisplayXSize/2 - width/2, DisplayYSize/2, foregroundColor);
                 Screen('Flip', window); %flip the text to the screen
                 WaitSecs(3)
-            elseif i == length(targetss)-10 %10 trials left
+            elseif i == length(targetss)-9 %10 trials left
                 Screen('TextSize', window, 30); %size of text
                 text = 'Nearly there, only 10 trials left :)'; %message
                 width=RectWidth(Screen ('TextBounds', window, text)); %width of text
