@@ -301,13 +301,7 @@ try
         WrongFixation=0; %to check that the participant are fixating
         t = 2;
 %% Start the trials
-        j = 0; %for no cue trials
         for i=1:length(targetss)
-            %% Unsure if this works.. test
-            if j == 1; %if no cue trial just presented, go back in the index so target locs all played
-                i(i) = i-1;
-                j = 0;
-            end
             targetss(i) = targetss(i)*vadx;            
             %% Marking trials
             if i == round(length(targetss)/4) %quarter of the way through
@@ -353,7 +347,7 @@ try
             
 %% Cue presentation
             if Cue(i) == 0; %no cue present, just target therefore do nothing
-                j = j+1; %counting number of no cue trials
+                j = j+1; %counting number of no 
             else %Cue == 1; cue present
                 cue = 'S';
                 Screen('DrawText', window, cue, DisplayXSize/2+xcue-sizetarg/2, DisplayYSize/2-heightt/2, foregroundColor); %present cue
