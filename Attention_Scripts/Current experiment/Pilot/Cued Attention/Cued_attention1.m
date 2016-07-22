@@ -85,6 +85,7 @@ nrtrials = length(targetss);
 
 
 TargetLetter =  Data(:, ismember(Text, 'TargetLetter')); %defining target from xls file (A/H)TargetLetter: 1-A, 2-H
+Cue = Data(:, ismember(Text, 'Cue')); %defining whether there is a distractor or a cue present
 
 %% correct response keys
 leftKey = KbName('-'); %this is a number that identifies the key; letter A
