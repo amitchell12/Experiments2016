@@ -302,7 +302,10 @@ try
         t = 2;
 %% Start the trials
         for i=1:length(targetss)
-            targetss(i) = targetss(i)*vadx;            
+            targetss(i) = targetss(i)*vadx;
+            if Cue(i) == 0; %if there isn't a cue present somehow need to reset target location
+                targetss(i) = targetss(i) - i; %attempt to replay target
+            end
             %% Marking trials
             if i == round(length(targetss)/4) %quarter of the way through
                 Screen('TextSize', window, 30); %size of text
@@ -346,8 +349,10 @@ try
             heightt=sizetarg; %height of the target
             
 %% Cue presentation
-            cue = 'S';
-            Screen('DrawText', window, cue, DisplayXSize/2+xcue-sizetarg/2, DisplayYSize/2-heightt/2, foregroundColor); %present cue
+            if Cue(i) == 1; %if there is a cue present
+                cue = 'S';
+                Screen('DrawText', window, cue, DisplayXSize/2+xcue-sizetarg/2, DisplayYSize/2-heightt/2, foregroundColor); %present cue
+            end
 %% Target Presentation
             Screen('DrawText', window, target, DisplayXSize/2+targetss(i)-sizetarg/2, DisplayYSize/2-heightt/2, foregroundColor); %draw target
             Screen('Flip', window);
