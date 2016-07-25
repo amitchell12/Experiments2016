@@ -25,7 +25,7 @@ warning('off', 'all');
 %% input the cue position for chance perception. We want to show the cue at this location and targets at all set locations to the right of the cue
 xcuedeg=-13.3538245817584; % TO INPUT from the graph in the step 1
 nrtargets=20;
-trialnr=5; %nr of trials per target
+trialnr=1; %nr of trials per target
 
 %% environment for the experiment
 dummymode=1; %?practice?
@@ -301,17 +301,15 @@ try
 
         WrongFixation=0; %to check that the participant are fixating
         t = 2;
+        j=0; %for counting no cue trials
 %% Start the trials
-        for i=1:length(targetss)
-            j=0; %for counting no cue trials
+        for j=1:length(targetss)
+            if Cue(j) == 1;
+                i = j;
+            end
             targetss(i) = targetss(i)*vadx;
             % Repeating previous nocue trials
-            %% UNSURE IF THIS WORKS
-            if j > 0 %if no cue was played
-                targetss(i) = i-1;
-                Cue(i) = 1;
-                j = 0; %j back to 0
-            end
+            %% Doesn't work... ask??
             %% Marking trials
             if i == round(length(targetss)/4) %quarter of the way through
                 Screen('TextSize', window, 30); %size of text
@@ -357,9 +355,7 @@ try
 %% Cue presentation
             if Cue(i) == 1; %if there is a cue present
                 cue = 'S';
-                Screen('DrawText', window, cue, DisplayXSize/2+xcue-sizetarg/2, DisplayYSize/2-heightt/2, foregroundColor); %present cue
-            else
-                j = j+1;
+                Screen('DrawText', window, cue, DisplayXSize/2+xcue-sizetarg/2, DisplayYSize/2-heightt/2, foregroundColor); %present cue                
             end
 %% Target Presentation
             Screen('DrawText', window, target, DisplayXSize/2+targetss(i)-sizetarg/2, DisplayYSize/2-heightt/2, foregroundColor); %draw target
@@ -377,6 +373,12 @@ try
             que = '?';
             Screen('DrawText', window, que, DisplayXSize/2 - width/2, DisplayYSize/2-height/2, foregroundColor); %draw fix cross
             Screen('Flip', window); 
+            %% DOESN'T WORK
+            % Changing no cue to cued condition
+            if Cue(i) == 0;
+                i = j-1;
+                Cue(i) = 0;
+            end
 
 %% Voice trigger coding
             if audio
