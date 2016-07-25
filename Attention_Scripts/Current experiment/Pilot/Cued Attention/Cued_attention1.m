@@ -61,6 +61,15 @@ textsizedeg=1; %degrees, visual crowding in fovea under 0.2 deg; 0.35 deg visual
 textsizecm=tan(pi*textsizedeg/360)*2*57; %in cm
 textsizept=2*round(textsizecm/textpt); %in pt, for some reason this number needs to be doubled
 
+%% Trial variables
+
+% read trial variables from an xls file
+[Data,Text] = xlsread('TrialCounter_cue1.xlsx');
+
+
+TargetLetter =  Data(:, ismember(Text, 'TargetLetter')); %defining target from xls file (A/H)TargetLetter: 1-A, 2-H
+Cue = Data(:, ismember(Text, 'Cue')); %defining whether there is a distractor or a cue present
+
 %% Degrees of target and cue
 sizetargetdeg = 1.5; %size of target in degrees
 %how many degrees does the screen cover
@@ -78,14 +87,6 @@ end;
 targetss=targetss(randperm(length(targetss)));
 
 nrtrials = length(targetss);
-%% Trial variables
-
-% read trial variables from an xls file
-[Data,Text] = xlsread('TrialCounter_cue1.xlsx');
-
-
-TargetLetter =  Data(:, ismember(Text, 'TargetLetter')); %defining target from xls file (A/H)TargetLetter: 1-A, 2-H
-Cue = Data(:, ismember(Text, 'Cue')); %defining whether there is a distractor or a cue present
 
 %% correct response keys
 leftKey = KbName('-'); %this is a number that identifies the key; letter A
@@ -302,7 +303,15 @@ try
         t = 2;
 %% Start the trials
         for i=1:length(targetss)
+            j=0; %for counting no cue trials
             targetss(i) = targetss(i)*vadx;
+            % Repeating previous nocue trials
+            %% UNSURE IF THIS WORKS
+            if j > 0 %if no cue was played
+                targetss(i) = i-1;
+                Cue(i) = 1;
+                j = 0; %j back to 0
+            end
             %% Marking trials
             if i == round(length(targetss)/4) %quarter of the way through
                 Screen('TextSize', window, 30); %size of text
@@ -349,6 +358,8 @@ try
             if Cue(i) == 1; %if there is a cue present
                 cue = 'S';
                 Screen('DrawText', window, cue, DisplayXSize/2+xcue-sizetarg/2, DisplayYSize/2-heightt/2, foregroundColor); %present cue
+            else
+                j = j+1;
             end
 %% Target Presentation
             Screen('DrawText', window, target, DisplayXSize/2+targetss(i)-sizetarg/2, DisplayYSize/2-heightt/2, foregroundColor); %draw target
