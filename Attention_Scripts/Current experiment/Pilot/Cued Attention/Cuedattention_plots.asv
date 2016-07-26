@@ -72,10 +72,7 @@ legend('No cue', 'Cue');
 title('Effect of target location on response time');
 
 %% Complete averages
-% Calculating the total averages for the localiser and VRT tasks
-
-Tot_LocAv = nanmean(Av_allVRTloc);
-Tot_CueAv = nanmean(Av_allVRTcue);
+% Calculating the total averages for the 
 
 matfilename = sprintf('%s_CuedAttentionplots', ParticipantID);
 save(matfilename)
