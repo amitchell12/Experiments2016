@@ -25,17 +25,17 @@ warning('off', 'all');
 %% input the cue position for chance perception. We want to show the cue at this location and targets at all set locations to the right of the cue
 xcuedeg=-13.3538245817584; % TO INPUT from the graph in the step 1
 nrtargets=20;
-trialnr=4; %nr of trials per target
+trialnr=1; %nr of trials per target
 
 %% environment for the experiment
-dummymode=0; %?practice?
-smi=1; %SMI REDm camera? 0 - no, 1 - yes
+dummymode=1; %?practice?
+smi=0; %SMI REDm camera? 0 - no, 1 - yes
 sx=31; %cm, xscreen
 sy=18; %cm yscreen
 sd=57; %cm, dist eye-screen
 
 eye=2; %number of eyes being recorded
-audio = 1;
+audio = 0;
 ParticipantID = 'AM';
 
 %% Time and space variables
@@ -61,6 +61,15 @@ textsizedeg=1; %degrees, visual crowding in fovea under 0.2 deg; 0.35 deg visual
 textsizecm=tan(pi*textsizedeg/360)*2*57; %in cm
 textsizept=2*round(textsizecm/textpt); %in pt, for some reason this number needs to be doubled
 
+%% Trial variables
+
+% read trial variables from an xls file
+[Data,Text] = xlsread('TrialCounter_cue1.xlsx');
+
+
+TargetLetter =  Data(:, ismember(Text, 'TargetLetter')); %defining target from xls file (A/H)TargetLetter: 1-A, 2-H
+Cue = Data(:, ismember(Text, 'Cue')); %defining whether there is a distractor or a cue present
+
 %% Degrees of target and cue
 sizetargetdeg = 1.5; %size of target in degrees
 %how many degrees does the screen cover
@@ -78,13 +87,6 @@ end;
 targetss=targetss(randperm(length(targetss)));
 
 nrtrials = length(targetss);
-%% Trial variables
-
-% read trial variables from an xls file
-[Data,Text] = xlsread('TrialCounter_cue1.xlsx');
-
-
-TargetLetter =  Data(:, ismember(Text, 'TargetLetter')); %defining target from xls file (A/H)TargetLetter: 1-A, 2-H
 
 %% correct response keys
 leftKey = KbName('-'); %this is a number that identifies the key; letter A
@@ -299,9 +301,15 @@ try
 
         WrongFixation=0; %to check that the participant are fixating
         t = 2;
+        j=0; %for counting no cue trials
 %% Start the trials
-        for i=1:length(targetss)
-            targetss(i) = targetss(i)*vadx;            
+        for j=1:length(targetss)
+            if Cue(j) == 1;
+                i = j;
+            end
+            targetss(i) = targetss(i)*vadx;
+            % Repeating previous nocue trials
+            %% Doesn't work... ask??
             %% Marking trials
             if i == round(length(targetss)/4) %quarter of the way through
                 Screen('TextSize', window, 30); %size of text
@@ -345,8 +353,10 @@ try
             heightt=sizetarg; %height of the target
             
 %% Cue presentation
-            cue = 'S';
-            Screen('DrawText', window, cue, DisplayXSize/2+xcue-sizetarg/2, DisplayYSize/2-heightt/2, foregroundColor); %present cue
+            if Cue(i) == 1; %if there is a cue present
+                cue = 'S';
+                Screen('DrawText', window, cue, DisplayXSize/2+xcue-sizetarg/2, DisplayYSize/2-heightt/2, foregroundColor); %present cue                
+            end
 %% Target Presentation
             Screen('DrawText', window, target, DisplayXSize/2+targetss(i)-sizetarg/2, DisplayYSize/2-heightt/2, foregroundColor); %draw target
             Screen('Flip', window);
@@ -363,6 +373,12 @@ try
             que = '?';
             Screen('DrawText', window, que, DisplayXSize/2 - width/2, DisplayYSize/2-height/2, foregroundColor); %draw fix cross
             Screen('Flip', window); 
+            %% DOESN'T WORK
+            % Changing no cue to cued condition
+            if Cue(i) == 0;
+                i = j-1;
+                Cue(i) = 0;
+            end
 
 %% Voice trigger coding
             if audio
